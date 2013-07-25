@@ -12,10 +12,13 @@ from pluginlib import GUIPlugin
 class UserPlugin(GUIPlugin):
     def __init__(self, objects, get_path):
         settings = read_config(get_path(),
-            objects['settings manager'].get_config_directory())
+                objects['settings manager'].get_config_directory())
         sidebar = Sidebar(settings, objects['textarea'])
         objects['mainwindow'].inner_h_layout.addWidget(sidebar)
         self.hotkeys = {'Ctrl+R': sidebar.update_list}
+
+        objects['textarea'].cursorPositionChanged.connect(\
+                sidebar.update_active_chapter)
 
 def read_config(pluginpath, configpath):
     configfile = os.path.join(configpath, 'kalpana-chapters.conf')
@@ -31,6 +34,7 @@ class Sidebar(QtGui.QListWidget):
         self.settings = settings
         self.textarea = textarea
         self.itemActivated.connect(self.goto_chapter)
+        self.default_item_bg = None
 
     def update_list(self):
         self.clear()
@@ -45,11 +49,23 @@ class Sidebar(QtGui.QListWidget):
 
         chapter_lengths = get_chapter_wordcounts(self.linenumbers, text)
 
-        format = lambda x: format_str.format(**chapter_rx.match(x[0]).groupdict())+'\n'+str(x[1])
+        format = lambda x: format_str.format(**chapter_rx.match(x[0]).groupdict())+'\n   '+str(x[1])
         self.addItems(list(map(format, zip(chapterlist, chapter_lengths))))
 
         self.setFixedWidth(self.sizeHintForColumn(0)+5)
 
+    def update_active_chapter(self):
+        if not self.count():
+            return
+        if not self.default_item_bg:
+            self.default_item_bg = self.item(0).backgroundColor()
+        pos = self.textarea.textCursor().blockNumber()+1
+        for item_nr in range(self.count()):
+            self.item(item_nr).setBackgroundColor(self.default_item_bg)
+        for n, ch in list(enumerate(self.linenumbers))[::-1]:
+            if pos >= ch:
+                self.item(n).setBackgroundColor(QtCore.Qt.darkGreen)
+                break
 
     def goto_chapter(self, _):
         self.textarea.goto_line(self.linenumbers[self.currentRow()])
