@@ -42,11 +42,20 @@ class Sidebar(QtGui.QListWidget):
                        zip(itertools.count(1), text))
         self.linenumbers, chapterlist =\
                 zip(*list(filter(lambda x:chapter_rx.match(x[1]), flist)))
-        format = lambda x: format_str.format(**chapter_rx.match(x).groupdict())
-        self.addItems(list(map(format, chapterlist)))
+
+        chapter_lengths = get_chapter_wordcounts(self.linenumbers, text)
+
+        format = lambda x: format_str.format(**chapter_rx.match(x[0]).groupdict())+'\n'+str(x[1])
+        self.addItems(list(map(format, zip(chapterlist, chapter_lengths))))
 
         self.setFixedWidth(self.sizeHintForColumn(0)+5)
+
 
     def goto_chapter(self, _):
         self.textarea.goto_line(self.linenumbers[self.currentRow()])
 
+
+def get_chapter_wordcounts(real_chapter_lines, text):
+    chapter_lines = list(real_chapter_lines) + [len(text)]
+    return [len(re.findall(r'\S+', '\n'.join(text[chapter_lines[i]:chapter_lines[i+1]-1])))
+            for i in range(len(chapter_lines)-1)]
