@@ -28,7 +28,6 @@ def read_config(pluginpath, configpath):
 class Sidebar(QtGui.QListWidget):
     def __init__(self, settings, textarea):
         super().__init__()
-        self.setMaximumWidth(100)
         self.settings = settings
         self.textarea = textarea
         self.itemActivated.connect(self.goto_chapter)
@@ -45,6 +44,8 @@ class Sidebar(QtGui.QListWidget):
                 zip(*list(filter(lambda x:chapter_rx.match(x[1]), flist)))
         format = lambda x: format_str.format(**chapter_rx.match(x).groupdict())
         self.addItems(list(map(format, chapterlist)))
+
+        self.setFixedWidth(self.sizeHintForColumn(0)+5)
 
     def goto_chapter(self, _):
         self.textarea.goto_line(self.linenumbers[self.currentRow()])
