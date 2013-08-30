@@ -1,5 +1,11 @@
 {
   "trigger_chapter_string": ">>",
-  "raw_chapter_string": ">> +CHAPTER (?P<num>\\S+): (?P<name>\\S+) <<",
-  "formatted_chapter_string": "{num} - {name}"
+  "chapter_strings": [
+    {
+      "raw": [
+        ">> +CHAPTER (?P<num>\\d+) ?[:-] (?P<name>.+) +<<"
+      ],
+      "format": "{num} - {name}"
+    }
+  ]
 }

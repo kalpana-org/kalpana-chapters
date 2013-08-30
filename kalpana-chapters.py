@@ -1,4 +1,5 @@
 import itertools
+from operator import itemgetter
 import os.path
 import re
 import shutil
@@ -46,23 +47,28 @@ class Sidebar(QtGui.QListWidget):
     def update_list(self):
         self.clear()
         trigger = self.settings['trigger_chapter_string']
-        chapter_rx = re.compile(self.settings['raw_chapter_string'])
-        format_str = self.settings['formatted_chapter_string']
+        chapter_strings = self.settings['chapter_strings']
         text = self.textarea.toPlainText().splitlines()
         if not text:
             return
-        flist = list(filter(lambda t:t[1].startswith(trigger),
-                               zip(itertools.count(1), text)))
-        if not flist:
+        # Find all remotely possible lines (linenumber, text)
+        rough_list = list(filter(lambda t:t[1].startswith(trigger),
+                                 zip(itertools.count(1), text)))
+        if not rough_list:
             return
-        flist2 = list(filter(lambda x:chapter_rx.match(x[1]), flist))
-        if not flist2:
-            return
-        self.linenumbers, chapterlist = zip(*flist2)
+        # Find only those that match the regexes
+        # Match to every rawstring possible, but overwrite earlier if needed
+        out = {}
+        for pair in chapter_strings: # all combinations
+            for s in pair['raw']: # all rawstrings
+                rx = re.compile(s)
+                for x in rough_list: # all lines
+                    if rx.match(x[1]):
+                        out[x[0]] = pair['format'].format(**rx.match(x[1]).groupdict()).strip()
+        self.linenumbers, chapterlist = zip(*sorted(out.items(), key=itemgetter(0)))
         chapter_lengths = get_chapter_wordcounts(self.linenumbers, text)
-        format = lambda x: format_str.format(**chapter_rx.match(x[0]).groupdict())+'\n   '+str(x[1])
+        format = lambda x: x[0] + '\n   ' + str(x[1])
         self.addItems(list(map(format, zip(chapterlist, chapter_lengths))))
-
         self.setFixedWidth(self.sizeHintForColumn(0)+5)
         self.show()
 
