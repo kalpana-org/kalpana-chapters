@@ -1,0 +1,14 @@
+$main_bgcolor: #222
+
+Sidebar {
+    background: $main_bgcolor;
+}
+
+Sidebar::item {
+    background: $main_bgcolor;
+    color: #ddd;
+}
+
+Sidebar::item:selected {
+    background: #444;
+}
