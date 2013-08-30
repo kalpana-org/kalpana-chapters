@@ -46,6 +46,7 @@ class Sidebar(QtGui.QListWidget):
 
     def update_list(self):
         self.clear()
+        prefix = self.settings['prologue name']
         trigger = self.settings['trigger chapter string']
         chapter_strings = self.settings['chapter strings']
         text = self.textarea.toPlainText().splitlines()
@@ -68,7 +69,13 @@ class Sidebar(QtGui.QListWidget):
         self.linenumbers, chapterlist = zip(*sorted(out.items(), key=itemgetter(0)))
         chapter_lengths = get_chapter_wordcounts(self.linenumbers, text)
         format = lambda x: x[0] + '\n   ' + str(x[1])
-        self.addItems(list(map(format, zip(chapterlist, chapter_lengths))))
+        items = list(map(format, zip(chapterlist, chapter_lengths)))
+        if self.linenumbers[0] > 1:
+            wc = len(re.findall(r'\S+', '\n'.join(text[:self.linenumbers[0]-1])))
+            if wc:
+                self.linenumbers = [0] + list(self.linenumbers)
+                items.insert(0, prefix + '\n   ' + str(wc))
+        self.addItems(items)
         self.setFixedWidth(self.sizeHintForColumn(0)+5)
         self.show()
 
