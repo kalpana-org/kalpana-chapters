@@ -46,8 +46,8 @@ class Sidebar(QtGui.QListWidget):
 
     def update_list(self):
         self.clear()
-        trigger = self.settings['trigger_chapter_string']
-        chapter_strings = self.settings['chapter_strings']
+        trigger = self.settings['trigger chapter string']
+        chapter_strings = self.settings['chapter strings']
         text = self.textarea.toPlainText().splitlines()
         if not text:
             return

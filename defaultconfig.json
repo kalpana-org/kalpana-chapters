@@ -1,6 +1,6 @@
 {
-  "trigger_chapter_string": ">>",
-  "chapter_strings": [
+  "trigger chapter string": ">>",
+  "chapter strings": [
     {
       "raw": [
         ">> +CHAPTER (?P<num>\\d+) ?[:-] (?P<name>.+) +<<"
