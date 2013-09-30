@@ -12,6 +12,7 @@ from pluginlib import GUIPlugin
 
 class UserPlugin(GUIPlugin):
     def __init__(self, objects, get_path):
+        super().__init__(objects, get_path)
         self.pluginpath = get_path()
         self.configpath = objects['settings manager'].get_config_directory()
         self.sidebar = Sidebar(objects['textarea'])
