@@ -18,6 +18,7 @@ class UserPlugin(GUIPlugin):
         self.sidebar = Sidebar(objects['textarea'])
         objects['mainwindow'].inner_h_layout.addWidget(self.sidebar)
         self.hotkeys = {'Ctrl+R': self.sidebar.toggle}
+        self.commands = {':': (self.sidebar.goto_line_or_chapter, 'Go to line or chapter')}
         objects['textarea'].cursorPositionChanged.connect(\
                 self.sidebar.update_active_chapter)
 
@@ -38,16 +39,14 @@ class Sidebar(QtGui.QListWidget):
     def __init__(self, textarea):
         super().__init__()
         self.textarea = textarea
-        self.itemActivated.connect(self.goto_chapter)
+        self.setDisabled(True)
         self.default_item_bg = None
         self.hide()
 
     def toggle(self):
         if self.isVisible():
             self.hide()
-            self.textarea.setFocus()
         else:
-            self.setFocus()
             self.update_list()
 
     def update_list(self):
@@ -98,8 +97,16 @@ class Sidebar(QtGui.QListWidget):
                 i.setFont(mod_font(i, True))
                 break
 
-    def goto_chapter(self, _):
-        self.textarea.goto_line(self.linenumbers[self.currentRow()])
+    def goto_line_or_chapter(self, arg):
+        if arg.isdigit():
+            self.textarea.goto_line(int(arg))
+        elif re.match(r'c\d+', arg):
+            chapter = int(arg[1:])
+            if chapter < 0 or chapter >= len(self.linenumbers):
+                print('Invalid chapter number')
+            self.textarea.goto_line(self.linenumbers[chapter])
+        else:
+            self.error('Invalid line or chapter number')
 
     def mod_items_fonts(self, bold):
         for item_nr in range(self.count()):
