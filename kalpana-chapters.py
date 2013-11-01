@@ -48,6 +48,7 @@ class Sidebar(QtGui.QListWidget):
             self.hide()
         else:
             self.update_list()
+            self.show()
 
     def update_list(self):
         self.clear()
@@ -84,7 +85,6 @@ class Sidebar(QtGui.QListWidget):
         self.setFixedWidth(self.sizeHintForColumn(0)+5)
         self.mod_items_fonts(bold=False)
         self.item(0).setFont(mod_font(self.item(0), bold=True))
-        self.show()
 
     def update_active_chapter(self):
         if not self.count() or not self.isVisible():
@@ -101,6 +101,7 @@ class Sidebar(QtGui.QListWidget):
         if arg.isdigit():
             self.textarea.goto_line(int(arg))
         elif re.match(r'c\d+', arg):
+            self.update_list()
             chapter = int(arg[1:])
             if chapter < 0 or chapter >= len(self.linenumbers):
                 print('Invalid chapter number')
