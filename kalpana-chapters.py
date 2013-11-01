@@ -78,9 +78,8 @@ class Sidebar(QtGui.QListWidget):
         items = list(map(format, zip(chapterlist, chapter_lengths)))
         if self.linenumbers[0] > 1:
             wc = len(re.findall(r'\S+', '\n'.join(text[:self.linenumbers[0]-1])))
-            if wc:
-                self.linenumbers = [0] + list(self.linenumbers)
-                items.insert(0, prefix + '\n   ' + str(wc))
+            self.linenumbers = [0] + list(self.linenumbers)
+            items.insert(0, prefix + '\n   ' + str(wc))
         self.addItems(items)
         self.mod_items_fonts(bold=True)
         self.setFixedWidth(self.sizeHintForColumn(0)+5)
