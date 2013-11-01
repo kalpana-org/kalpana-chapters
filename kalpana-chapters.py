@@ -18,7 +18,7 @@ class UserPlugin(GUIPlugin):
         self.sidebar = Sidebar(objects['textarea'])
         objects['mainwindow'].inner_h_layout.addWidget(self.sidebar)
         self.hotkeys = {'Ctrl+R': self.sidebar.toggle}
-        self.commands = {':': (self.sidebar.goto_line_or_chapter, 'Go to line or chapter')}
+        self.commands = {':': (self.sidebar.goto_line_or_chapter, 'Go to line or chapter (:c12 to go to chapter 12)')}
         objects['textarea'].cursorPositionChanged.connect(\
                 self.sidebar.update_active_chapter)
 
