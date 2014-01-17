@@ -6,7 +6,7 @@ import shutil
 
 from PyQt4 import QtCore, QtGui
 
-from libsyntyche.common import read_json, parse_stylesheet, read_file
+from libsyntyche.common import read_json, parse_stylesheet, read_file, make_sure_config_exists
 from pluginlib import GUIPlugin
 
 
@@ -23,15 +23,13 @@ class UserPlugin(GUIPlugin):
                 self.sidebar.update_active_chapter)
 
     def read_config(self):
+        # config
         configfile = os.path.join(self.configpath, 'kalpana-chapters.conf')
-        if not os.path.exists(configfile):
-            shutil.copyfile(os.path.join(self.pluginpath, 'defaultconfig.json'),
-                            configfile)
+        make_sure_config_exists(configfile, os.path.join(self.pluginpath, 'default_config.json'))
         self.sidebar.settings = read_json(configfile)
+        # stylesheet
         cssfile = os.path.join(self.configpath, 'kalpana-chapters.css')
-        if not os.path.exists(cssfile):
-            shutil.copyfile(os.path.join(self.pluginpath, 'defaulttheme.css'),
-                            cssfile)
+        make_sure_config_exists(cssfile, os.path.join(self.pluginpath, 'default_theme.css'))
         self.sidebar.setStyleSheet(parse_stylesheet(read_file(cssfile)))
 
 
