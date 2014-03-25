@@ -15,7 +15,7 @@ class UserPlugin(GUIPlugin):
         super().__init__(objects, get_path)
         self.pluginpath = get_path()
         self.configpath = objects['settings manager'].get_config_directory()
-        self.sidebar = Sidebar(objects['textarea'])
+        self.sidebar = Sidebar(objects['textarea'], self.error)
         objects['mainwindow'].inner_h_layout.addWidget(self.sidebar)
         self.hotkeys = {'Ctrl+R': self.sidebar.toggle}
         self.commands = {':': (self.sidebar.goto_line_or_chapter, 'Go to line or chapter (:c12 to go to chapter 12)')}
@@ -34,11 +34,13 @@ class UserPlugin(GUIPlugin):
 
 
 class Sidebar(QtGui.QListWidget):
-    def __init__(self, textarea):
+    def __init__(self, textarea, error):
         super().__init__()
         self.textarea = textarea
+        self.error = error
         self.setDisabled(True)
         self.default_item_bg = None
+        self.chapters_detected = False
         self.hide()
 
     def toggle(self):
@@ -55,11 +57,13 @@ class Sidebar(QtGui.QListWidget):
         chapter_strings = self.settings['chapter strings']
         text = self.textarea.toPlainText().splitlines()
         if not text:
+            self.chapters_detected = False
             return
         # Find all remotely possible lines (linenumber, text)
         rough_list = list(filter(lambda t:t[1].startswith(trigger),
                                  zip(itertools.count(1), text)))
         if not rough_list:
+            self.chapters_detected = False
             return
         # Find only those that match the regexes
         # Match to every rawstring possible, but overwrite earlier if needed
@@ -83,6 +87,7 @@ class Sidebar(QtGui.QListWidget):
         self.setFixedWidth(self.sizeHintForColumn(0)+5)
         self.mod_items_fonts(bold=False)
         self.item(0).setFont(mod_font(self.item(0), bold=True))
+        self.chapters_detected = True
 
     def update_active_chapter(self):
         if not self.count() or not self.isVisible():
@@ -100,10 +105,14 @@ class Sidebar(QtGui.QListWidget):
             self.textarea.goto_line(int(arg))
         elif re.match(r'c\d+', arg):
             self.update_list()
+            if not self.chapters_detected:
+                self.error('No chapters detected')
+                return
             chapter = int(arg[1:])
-            if chapter < 0 or chapter >= len(self.linenumbers):
-                print('Invalid chapter number')
-            self.textarea.goto_line(self.linenumbers[chapter])
+            if chapter in range(len(self.linenumbers)):
+                self.textarea.goto_line(self.linenumbers[chapter])
+            else:
+                self.error('Invalid chapter number')
         else:
             self.error('Invalid line or chapter number')
 
