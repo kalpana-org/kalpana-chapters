@@ -21,6 +21,7 @@ class UserPlugin(GUIPlugin):
         self.commands = {':': (self.sidebar.goto_line_or_chapter, 'Go to line or chapter (:c12 to go to chapter 12)')}
         objects['textarea'].cursorPositionChanged.connect(\
                 self.sidebar.update_active_chapter)
+        self.get_chapter_text = self.sidebar.get_chapter_text
 
     def read_config(self):
         # config
@@ -115,6 +116,22 @@ class Sidebar(QtGui.QListWidget):
                 self.error('Invalid chapter number')
         else:
             self.error('Invalid line or chapter number')
+
+    def get_chapter_text(self, chapter):
+        self.update_list()
+        if not self.chapters_detected:
+            self.error('No chapters detected')
+            return
+        lines = self.textarea.toPlainText().splitlines()
+        if chapter not in range(len(self.linenumbers)):
+            self.error('Invalid chapter number')
+            return
+        ln = self.linenumbers + [len(lines)+1]
+        text = '\n'.join(lines[ln[chapter]:ln[chapter+1]-1]).strip('\n\t ')
+        if not text:
+            self.error('Chapter is only whitespace, ignoring')
+        else:
+            return text
 
     def mod_items_fonts(self, bold):
         for item_nr in range(self.count()):
